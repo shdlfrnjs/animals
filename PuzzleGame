@@ -5,7 +5,7 @@ import random
 index = 0               # 인덱스로 처리 구분
 mode = 0                # 퍼즐 선택
 fail = 0                # 게임 실패시 1
-countdown = 600        # 제한시간 1초=10 // 10초=100 // 100초=1000 '(=root.after(100, game_main) 에 맞추기 위해')
+countdown = 600         # 제한시간 1초=10 // 10초=100 // 100초=1000 '(=root.after(100, game_main) 에 맞추기 위해')
 
 mouse_x = 0
 mouse_y = 0
