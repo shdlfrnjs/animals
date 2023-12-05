@@ -1,0 +1,293 @@
+import tkinter
+import random
+
+# 변수
+index = 0               # 인덱스로 처리 구분
+mode = 0                # 퍼즐 선택
+fail = 0                # 게임 실패시 1
+countdown = 1000        # 제한시간 1초=10 // 10초=100 // 100초=1000 '(=root.after(100, game_main) 에 맞추기 위해')
+
+mouse_x = 0
+mouse_y = 0
+mouse_click = 0
+
+xPos, yPos = 50, 50     # 첫 버튼 생성 좌표
+num = 0                 # 버튼 생성 함수용
+
+# 이미지 리스트, 버튼 리스트 초기화
+photoList = [None] * 16
+sortedPhotoList = [None] * 16  # 정렬된 초기 이미지 순서를 저장할 리스트 (=정답 체크용)
+btnList = [None] * 16
+
+# 버튼 이미지 파일명 (=모든 버튼 이미지명 통일, 파일 경로만 다름)
+fileNameList = [
+    "img1.png", "img2.png", "img3.png", "img4.png",
+    "img5.png", "img6.png", "img7.png", "img8.png",
+    "img9.png", "img10.png","img11.png","img12.png",
+    "img13.png","img14.png","img15.png","img16.png"
+]
+
+# 처음 클릭한 버튼 초기화
+clicked_btn = None
+
+# 마우스 좌표
+def mouse_move(e):
+    global mouse_x, mouse_y
+    mouse_x = e.x
+    mouse_y = e.y
+
+# 마우스 클릭
+def mouse_press(e):
+    global mouse_click
+    mouse_click = 1
+
+# 클릭한 두 버튼 이미지를 서로 바꾸는 함수
+def switch_images(btn):                                 #1. btn 을 매개변수로 받기 (=버튼 생성시 command 설정함)
+    global clicked_btn                                  #2. 이전에 클릭한 버튼을 기억하는 변수
+    if clicked_btn is None:                             #3. 클릭한 버튼이 없을 때는 
+        clicked_btn = btn                               #4. 클릭하는 버튼을 clicked_btn 으로 저장 
+    else:                                               #5. 클릭한 버튼이 있을때는    
+        btn_index = btnList.index(btn)                   
+        clicked_btn_index = btnList.index(clicked_btn)  #6. btnList 에 있는 btn, clicked_btn의 인덱스를 찾아서,
+                                                        #7. photoList의 이미지 교환을 하고나서 btn과 clicked_btn의 이미지를 서로 교환
+        photoList[btn_index], photoList[clicked_btn_index] = photoList[clicked_btn_index], photoList[btn_index]
+        btn.config(image=photoList[btn_index])
+        clicked_btn.config(image=photoList[clicked_btn_index])
+        
+        clicked_btn = None                              #8. 교환을 마친 뒤는 클릭한 버튼을 다시 초기화
+        goal_check()                                    #9. 버튼을 교환 할 때마다 정답 체크 함수 호출 
+
+# 정답 체크
+def goal_check():
+    global index
+    if photoList == sortedPhotoList: # 저장해둔 처음 리스트와 셔플된 리스트가 같아지면 정답
+        index = 3
+    else:
+        root.after(100, goal_check)  # 0.1초마다 퍼즐이 맞춰졌는지 확인
+
+# 시작 화면 퍼즐 선택 버튼들
+def draw_rect():
+    cvs.create_rectangle(156, 250, 356, 350, fill="sandy brown", width=0, tag="START")
+    cvs.create_rectangle(412, 250, 612, 350, fill="indian red", width=0, tag="START")
+    cvs.create_rectangle(668, 250, 868, 350, fill="khaki", width=0, tag="START")
+    cvs.create_rectangle(924, 250, 1124, 350, fill="dark orange", width=0, tag="START")
+    cvs.create_rectangle(156, 450, 356, 550, fill="gold", width=0, tag="START")
+    cvs.create_rectangle(412, 450, 612, 550, fill="gainsboro", width=0, tag="START")
+    cvs.create_rectangle(668, 450, 868, 550, fill="forest green", width=0, tag="START")
+    cvs.create_rectangle(924, 450, 1124, 550, fill="aquamarine", width=0, tag="START")
+
+# 텍스트 만드는 함수
+def write_txt(txt, x, y, Size, Color, Tag):
+    Font = ("Jokerman", Size, "bold")
+    cvs.create_text(x + 2, y + 2, text = txt,
+                    fill="white", font=Font, tag=Tag) # 텍스트 그림자
+    cvs.create_text(x, y , text = txt,
+                    fill=Color, font=Font, tag=Tag)
+
+# 목표 이미지 파일 경로 설정 및 이미지 생성 함수
+def create_goalimage():
+    if mode == 1:
+        goalimage.config(file="강아지/강아지.png")
+    elif mode == 2:
+        goalimage.config(file="고양이/고양이.png")
+    elif mode == 3:
+        goalimage.config(file="사자/사자.png")
+    elif mode == 4:
+        goalimage.config(file="호랑이/호랑이.png")
+    elif mode == 5:
+        goalimage.config(file="기린/기린.png")
+    elif mode == 6:
+        goalimage.config(file="판다/판다.png")
+    elif mode == 7:
+        goalimage.config(file="앵무새/앵무새.png")
+    elif mode == 8:
+        goalimage.config(file="펭귄/펭귄.png")
+    else:
+        goalimage.config(file="")
+    cvs.create_image(1080, 200, image=goalimage, tag="MAIN")
+
+# 퍼즐 이미지 파일 경로 설정 및 퍼즐 이미지 리스트 로딩
+def create_btnimage():
+    for i in range(0, 16):
+        if mode == 1:
+            photoList[i] = tkinter.PhotoImage(file="강아지/" + fileNameList[i])
+        elif mode == 2:
+            photoList[i] = tkinter.PhotoImage(file="고양이/" + fileNameList[i])
+        elif mode == 3:
+            photoList[i] = tkinter.PhotoImage(file="사자/" + fileNameList[i])
+        elif mode == 4:
+            photoList[i] = tkinter.PhotoImage(file="호랑이/" + fileNameList[i])
+        elif mode == 5:
+            photoList[i] = tkinter.PhotoImage(file="기린/" + fileNameList[i])
+        elif mode == 6:
+            photoList[i] = tkinter.PhotoImage(file="판다/" + fileNameList[i])
+        elif mode == 7:
+            photoList[i] = tkinter.PhotoImage(file="앵무새/" + fileNameList[i])
+        elif mode == 8:
+            photoList[i] = tkinter.PhotoImage(file="펭귄/" + fileNameList[i])
+        else:
+            photoList[i] = tkinter.PhotoImage(file="" + fileNameList[i])
+        # 1. 정렬된 초기 이미지 순서를 따로 저장해놓고 (=정답 체크용)
+        sortedPhotoList[i] = photoList[i] 
+    # 2. 이미지 리스트를 무작위로 섞어준다
+    random.shuffle(photoList)
+
+# 퍼즐 버튼 리스트 로딩 및 생성
+def create_puzzles():
+    global num, xPos, yPos
+    for i in range(0, 4):
+        for k in range(0, 4):
+            if num < 16:  # num이 16보다 작을 때만 버튼을 생성하도록 수정 (=list range of index 에러방지)
+                btnList[num] = tkinter.Button(root, image=photoList[num])
+                btnList[num].config(command=lambda btn=btnList[num] : switch_images(btn)) # 버튼 커맨드에 함수 넣기
+                cvs.create_window(xPos, yPos, anchor='nw', window=btnList[num], tag="MAIN")
+                num += 1
+            xPos += 150
+        xPos = 50
+        yPos += 150
+
+# 타이머 생성
+def create_timer():
+    cvs.create_window(1230, 650, anchor='se', window=timer, tag="MAIN")
+
+# 카운트다운 및 타이머 업데이트 함수
+def update_countdown():
+    global countdown
+    if countdown > 99: # 10초 까지는 정수로
+        timer.config(text=str(int(countdown/10)))
+        countdown -= 1
+    elif countdown > 0: # 10초 이하는 소수로
+        timer.config(text=str(countdown/10))
+        countdown -= 1
+    elif countdown == 0:
+        game_fail()  # 시간이 다 되면 게임 실패 함수 호출
+
+# 게임 실패 함수
+def game_fail():
+    global index, fail
+    fail = 1
+    index = 3
+
+# 메인 처리 함수
+def game_main():
+    global index, mode, fail, num, xPos, yPos, countdown
+    global mouse_x, mouse_y, mouse_click
+    if index == 0: # 초기 타이틀 화면
+        write_txt("Help! the ANIMALS", 640, 100, 70, "black", "START")
+        write_txt("\"평화롭던 동물나라에 마녀가 찾아와 동물들을 가둬버리고 말았습니다..", 640, 190, 20, "black", "START")
+        write_txt("퍼즐을 풀어서 불쌍한 동물들을 구해주세요!\"", 640, 220, 20, "black", "START")
+        draw_rect()
+        write_txt("강아지", 256, 300, 35, "black", "START")
+        write_txt("고양이", 512, 300, 35, "black", "START")
+        write_txt("사자", 768, 300, 35, "black", "START")
+        write_txt("호랑이", 1024, 300, 35, "black", "START")
+        write_txt("기린", 256, 500, 35, "black", "START")
+        write_txt("판다", 512, 500, 35, "black", "START")
+        write_txt("앵무새", 768, 500, 35, "black", "START")
+        write_txt("펭귄", 1024, 500, 35, "black", "START")
+        write_txt("동물을 선택하면 START!", 640, 620, 30, "black", "START")
+        index = 1
+        mouse_click = 0
+    
+    elif index == 1: # 시작 대기
+        mode = 0
+        if mouse_click == 1: # 클릭 좌표에 의해 퍼즐 선택
+            if 156 < mouse_x and mouse_x < 356 and 250 < mouse_y and mouse_y < 350:
+                mode = 1
+            if 412 < mouse_x and mouse_x < 612 and 250 < mouse_y and mouse_y < 350:
+                mode = 2
+            if 668 < mouse_x and mouse_x < 868 and 250 < mouse_y and mouse_y < 350:
+                mode = 3
+            if 924 < mouse_x and mouse_x < 1124 and 250 < mouse_y and mouse_y < 350:
+                mode = 4
+            if 156 < mouse_x and mouse_x < 356 and 450 < mouse_y and mouse_y < 550:
+                mode = 5
+            if 412 < mouse_x and mouse_x < 612 and 450 < mouse_y and mouse_y < 550:
+                mode = 6
+            if 668 < mouse_x and mouse_x < 868 and 450 < mouse_y and mouse_y < 550:
+                mode = 7
+            if 924 < mouse_x and mouse_x < 1124 and 450 < mouse_y and mouse_y < 550:
+                mode = 8
+        if mode > 0: # 퍼즐이 선택되면
+            mouse_click = 0
+            cvs.delete("START") # 시작 화면 제거
+            create_btnimage() # 퍼즐 이미지 준비
+            index = 2
+    
+    elif index == 2: # 게임 시작
+        create_puzzles() # 퍼즐 버튼 생성
+        create_goalimage() # 목표 이미지 생성
+        create_timer()      # 타이머 생성
+        update_countdown() # 1초마다 업데이트
+
+    elif index == 3: # 게임 종료
+        cvs.delete("MAIN") # 본 게임 화면 제거
+        num = 0           
+        xPos, yPos = 50, 50 # == 다시 할 수 있게 버튼 생성 함수 변수 num, xPos, yPos 초기화
+        countdown = 1000 # == 다시 할 수 있게 타이머 설정시간 countdown 초기화
+        
+        write_txt("GAME OVER", 640, 100, 70, "black", "OVER")
+        
+        if fail == 0: # 제한 시간 내에 성공
+            if mode == 1:
+                write_txt("축하합니다! 강아지가 풀려났습니다!", 640, 250, 30, "black", "OVER")
+            if mode == 2:
+                write_txt("축하합니다! 고양이가 풀려났습니다!", 640, 250, 30, "black", "OVER")
+            if mode == 3:
+                write_txt("축하합니다! 사자가 풀려났습니다!", 640, 250, 30, "black", "OVER")
+            if mode == 4:
+                write_txt("축하합니다! 호랑이가 풀려났습니다!", 640, 250, 30, "black", "OVER")
+            if mode == 5:
+                write_txt("축하합니다! 기린이 풀려났습니다!", 640, 250, 30, "black", "OVER")
+            if mode == 6:
+                write_txt("축하합니다! 판다가 풀려났습니다!", 640, 250, 30, "black", "OVER")
+            if mode == 7:
+                write_txt("축하합니다! 앵무새가 풀려났습니다!", 640, 250, 30, "black", "OVER")
+            if mode == 8:
+                write_txt("축하합니다! 펭귄이 풀려났습니다!", 640, 250, 30, "black", "OVER")  
+        elif fail == 1: # 제한 시간 내에 실패
+            write_txt("TIME OVER! 마녀에게 붙잡혔습니다..", 640, 250, 30, "black", "OVER")
+        
+        cvs.create_rectangle(412, 450, 612, 550, fill="cyan", width=0, tag="OVER")
+        write_txt("다시하기", 512, 500, 30, "black", "OVER")
+        cvs.create_rectangle(668, 450, 868, 550, fill="cyan", width=0, tag="OVER")
+        write_txt("종료하기", 768, 500, 30, "black", "OVER")
+        
+        fail = 0 # 게임 실패 여부 초기화
+        mouse_click = 0
+        index = 4
+    
+    elif index == 4: # 게임 재시작
+        if mouse_click == 1:
+            if 412 < mouse_x and mouse_x < 612 and 450 < mouse_y and mouse_y < 550: # 다시하기
+                mouse_click = 0
+                cvs.delete("OVER") # 게임 종료 화면 제거
+                index = 0
+            if 668 < mouse_x and mouse_x < 868 and 450 < mouse_y and mouse_y < 550: # 종료하기
+                root.destroy() # 창 닫기
+    
+    root.after(100, game_main) # 메인 처리 함수 호출 0.1초마다
+
+root = tkinter.Tk()
+root.geometry("+100+50") # 처음에 게임창 뜨는 위치 좌상단에서 100 50 고정
+root.title("ANIMALS Puzzle Game")
+root.resizable(False, False)
+root.bind("<Motion>", mouse_move)
+root.bind("<ButtonPress>", mouse_press)
+
+cvs = tkinter.Canvas(root, width=1280, height=700)
+cvs.pack()
+
+bg = tkinter.PhotoImage(file="game_bg.png") # 배경 이미지 로딩
+goalimage = tkinter.PhotoImage(file="") # 목표 이미지 로딩
+timer_img = tkinter.PhotoImage(file="timer_img.png") # 타이머 이미지 로딩
+
+# 타이머 Label 만들기
+timer = tkinter.Label(root, text=str(countdown), font=("Arial", 50), fg="red", bg="black",
+                       image=timer_img, compound=tkinter.TOP)
+
+cvs.create_image(640, 350, image=bg) # 배경 이미지 생성
+
+game_main()
+
+root.mainloop()
