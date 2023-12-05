@@ -5,7 +5,7 @@ import random
 index = 0               # 인덱스로 처리 구분
 mode = 0                # 퍼즐 선택
 fail = 0                # 게임 실패시 1
-countdown = 1000        # 제한시간 1초=10 // 10초=100 // 100초=1000 '(=root.after(100, game_main) 에 맞추기 위해')
+countdown = 600        # 제한시간 1초=10 // 10초=100 // 100초=1000 '(=root.after(100, game_main) 에 맞추기 위해')
 
 mouse_x = 0
 mouse_y = 0
@@ -65,14 +65,14 @@ def goal_check():
     else:
         root.after(100, goal_check)  # 0.1초마다 퍼즐이 맞춰졌는지 확인
 
-# 시작 화면 퍼즐 선택 버튼들
+# 퍼즐 선택 버튼 도형 그리기 함수
 def draw_rect():
     cvs.create_rectangle(156, 250, 356, 350, fill="sandy brown", width=0, tag="START")
-    cvs.create_rectangle(412, 250, 612, 350, fill="indian red", width=0, tag="START")
-    cvs.create_rectangle(668, 250, 868, 350, fill="khaki", width=0, tag="START")
+    cvs.create_rectangle(412, 250, 612, 350, fill="salmon", width=0, tag="START")
+    cvs.create_rectangle(668, 250, 868, 350, fill="goldenrod", width=0, tag="START")
     cvs.create_rectangle(924, 250, 1124, 350, fill="dark orange", width=0, tag="START")
     cvs.create_rectangle(156, 450, 356, 550, fill="gold", width=0, tag="START")
-    cvs.create_rectangle(412, 450, 612, 550, fill="gainsboro", width=0, tag="START")
+    cvs.create_rectangle(412, 450, 612, 550, fill="light gray", width=0, tag="START")
     cvs.create_rectangle(668, 450, 868, 550, fill="forest green", width=0, tag="START")
     cvs.create_rectangle(924, 450, 1124, 550, fill="aquamarine", width=0, tag="START")
 
@@ -224,7 +224,7 @@ def game_main():
         cvs.delete("MAIN") # 본 게임 화면 제거
         num = 0           
         xPos, yPos = 50, 50 # == 다시 할 수 있게 버튼 생성 함수 변수 num, xPos, yPos 초기화
-        countdown = 1000 # == 다시 할 수 있게 타이머 설정시간 countdown 초기화
+        countdown = 600 # == 다시 할 수 있게 타이머 설정시간 countdown 초기화
         
         write_txt("GAME OVER", 640, 100, 70, "black", "OVER")
         
